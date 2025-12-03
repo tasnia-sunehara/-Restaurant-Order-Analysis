@@ -1,105 +1,164 @@
-# 📊-Restaurant-Order-Analysis (SQL Project)
+🍽️ Restaurant Order Analysis (SQL Project)
 
-# This project focuses on understanding how a restaurant’s customers interact with its menu. Using SQL, I reviewed the full menu, explored pricing, and analyzed how often each item was ordered. I also examined order patterns over time such as how many items customers typically purchased and which orders resulted in the highest spending. By joining the menu and order tables, I was able to connect each purchase back to specific dishes and categories. The results highlight which items drive sales, which ones are less popular, and how customer choices shape overall business performance.
+Project Overview
 
-# 🛠️ Skills Used : SQL (JOINs, GROUP BY, aggregate functions, subqueries, filtering, date exploration)
+This repository presents a comprehensive SQL-based data analysis project focused on understanding customer behavior and sales performance for a restaurant's menu. The analysis leverages relational database concepts, including JOIN operations, aggregate functions, and subqueries, to explore menu pricing, item popularity, and customer spending patterns.
 
-# 🔍 What the Analysis Covers
+The primary goal is to provide actionable, data-driven insights into:
 
-Total number of menu items
+•
+Which menu items and categories drive the highest revenue.
 
-Least and most expensive dishes
+•
+How customer ordering choices influence overall business performance.
 
-Breakdown of dishes by category
-
-Average price within each category
-
-Order date range and total order volume
-
-Orders with the highest number of items
-
-Most and least ordered menu items
-
-Top 5 highest-spending orders
-
-Detailed breakdown of items within top orders
-
-# 🛠️ Skills Used : SQL (JOINs, GROUP BY, aggregate functions, subqueries, filtering, date exploration)
+•
+Identifying high-value orders and the items they contain.
 
 
-SQL (JOINs, GROUP BY, aggregate functions, subqueries, filtering, date exploration)
 
--- Restaurant Order Analysis
 
--- 1. View the menu_items table and write a query to find the
---    number of items on the menu
-USE restaurant_db;
+🛠️ Technology Stack
 
-SELECT * 
-FROM menu_items;
+The entire analysis was conducted using SQL (specifically, a relational database like MySQL or PostgreSQL).
 
+Component
+Technology/Skill
+Key Concepts Used
+Database Language
+SQL
+SELECT, FROM, WHERE, GROUP BY, ORDER BY
+Data Manipulation
+SQL Joins
+JOIN (connecting menu_items and order_details)
+Statistical Analysis
+Aggregate Functions
+COUNT(), SUM(), AVG(), MIN(), MAX()
+Advanced Querying
+Subqueries, Filtering
+HAVING, IN clause, Date Exploration (MIN/MAX dates)
+
+
+
+
+
+📈 Analysis Objectives
+
+The following key questions were addressed through the SQL queries:
+
+Menu Structure and Pricing
+
+1.
+Menu Item Count: Determine the total number of unique items available on the menu.
+
+2.
+Price Extremes: Identify the least and most expensive dishes on the menu.
+
+3.
+Category Breakdown: Analyze the distribution of dishes across different categories (e.g., Italian, Asian, etc.) and calculate the average price within each category.
+
+Order Volume and Popularity
+
+1.
+Order Date Range: Establish the time frame covered by the order data.
+
+2.
+Total Volume: Calculate the total number of orders and the total number of items sold.
+
+3.
+Item Popularity: Identify the most and least frequently ordered menu items and categories.
+
+Customer Spending and High-Value Orders
+
+1.
+Order Size: Determine the orders with the highest number of items, and quantify how many orders exceeded a specific item count (e.g., 12 items).
+
+2.
+Top Spenders: Identify the Top 5 highest-spending orders based on total price.
+
+3.
+High-Value Itemization: Provide a detailed breakdown of the items and categories purchased within the highest-spending orders.
+
+
+
+
+💻 SQL Queries
+
+The complete set of SQL queries used for this analysis is provided below, structured by the analysis objective they address.
+
+Menu Structure and Pricing
+
+SQL
+
+
+-- 1. Total number of menu items
 SELECT COUNT(menu_item_id) AS Total_Number_of_items
 FROM menu_items;
 
-
 -- 2. Least and most expensive items on the menu
-SELECT item_name, price AS most_expensive_item
+SELECT item_name, price
 FROM menu_items
-ORDER BY price DESC;
-
-SELECT item_name, price AS least_expensive_item
-FROM menu_items
-ORDER BY price ASC;
-
-
--- 3. Italian dishes: count, least expensive, most expensive
-SELECT COUNT(category) AS Total_Italian_dishes
-FROM menu_items
-WHERE category = 'Italian';
-
-SELECT item_name AS least_expensive_Italian_dishes, price
-FROM menu_items
-WHERE category = 'Italian'
-ORDER BY price ASC
-LIMIT 3;
-
-SELECT item_name AS most_expensive_Italian_dishes, price
-FROM menu_items
-WHERE category = 'Italian'
 ORDER BY price DESC
-LIMIT 3;
+LIMIT 1; -- Most expensive
 
+SELECT item_name, price
+FROM menu_items
+ORDER BY price ASC
+LIMIT 1; -- Least expensive
 
--- 4. Dishes per category + average price
+-- 3. Dishes per category + average price
 SELECT category,
        COUNT(category) AS total_dish_categories,
        ROUND(AVG(price), 2) AS average_price
 FROM menu_items
-GROUP BY category;
+GROUP BY category
+ORDER BY average_price DESC;
 
 
--- 5. Date range of order_details table
+Order Volume and Popularity
+
+SQL
+
+
+-- 4. Date range of order_details table
 SELECT MIN(order_date) AS starting_date,
        MAX(order_date) AS ending_date
 FROM order_details;
 
-
--- 6. Total orders + total items
+-- 5. Total orders + total items
 SELECT COUNT(DISTINCT order_id) AS total_orders,
-       COUNT(*) AS total_items
+       COUNT(*) AS total_items_sold
 FROM order_details;
+
+-- 6. Least and most ordered items (by category and item name)
+-- Most Ordered
+SELECT category, item_name, COUNT(item_id) AS order_count
+FROM menu_items
+JOIN order_details ON item_id = menu_item_id
+GROUP BY category, item_name
+ORDER BY order_count DESC;
+
+-- Least Ordered
+SELECT category, item_name, COUNT(item_id) AS order_count
+FROM menu_items
+JOIN order_details ON item_id = menu_item_id
+GROUP BY category, item_name
+ORDER BY order_count ASC;
+
+
+Customer Spending and High-Value Orders
+
+SQL
 
 
 -- 7. Orders with the most number of items
-SELECT order_id,
-       COUNT(item_id) AS Most_number_of_items
+SELECT order_id, COUNT(item_id) AS item_count
 FROM order_details
 GROUP BY order_id
-ORDER BY COUNT(item_id) DESC;
+ORDER BY item_count DESC;
 
-
--- 8. How many orders had more than 12 items?
-SELECT COUNT(DISTINCT(order_id)) AS total_orders
+-- Count of orders with more than 12 items
+SELECT COUNT(DISTINCT(order_id)) AS total_large_orders
 FROM order_details
 WHERE order_id IN (
     SELECT order_id
@@ -108,57 +167,21 @@ WHERE order_id IN (
     HAVING COUNT(item_id) > 12
 );
 
-
--- 9. Combine menu_items and order_details tables
-SELECT *
-FROM menu_items
-JOIN order_details ON item_id = menu_item_id;
-
-
--- 10. Least and most ordered items + categories
-SELECT category,
-       item_name,
-       COUNT(item_id) AS least_ordered
-FROM menu_items
-JOIN order_details ON item_id = menu_item_id
-GROUP BY category, item_name
-ORDER BY COUNT(item_id) ASC;
-
-SELECT category,
-       item_name,
-       COUNT(item_id) AS most_ordered
-FROM menu_items
-JOIN order_details ON item_id = menu_item_id
-GROUP BY category, item_name
-ORDER BY COUNT(item_id) DESC;
-
-
--- 11. Top 5 highest spend orders
-SELECT order_id,
-       SUM(price) AS total_spend
+-- 8. Top 5 highest spend orders
+SELECT order_id, SUM(price) AS total_spend
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id
 GROUP BY order_id
 ORDER BY total_spend DESC
 LIMIT 5;
 
-
--- 12. Details of the highest spend order (order_id = 440)
-SELECT category,
-       COUNT(item_id) AS total_item,
-       item_name
+-- 9. Details of the top 5 highest spend orders (Example: Order ID 440)
+-- Note: The full query would use the top 5 IDs found in the previous step.
+SELECT order_id, category, item_name, COUNT(item_id) AS quantity, SUM(price) AS item_revenue
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id
-WHERE order_id = 440
-GROUP BY category, item_name;
+WHERE order_id IN (440, 2075, 1957, 330, 2675) -- Example IDs from analysis
+GROUP BY order_id, category, item_name
+ORDER BY order_id, category;
 
 
--- 13. Details of the top 5 highest spend orders
-SELECT order_id,
-       SUM(price) AS total_spend,
-       category,
-       COUNT(item_id)
-FROM menu_items
-JOIN order_details ON item_id = menu_item_id
-WHERE order_id IN (440, 2075, 1957, 330, 2675)
-GROUP BY order_id, category;
