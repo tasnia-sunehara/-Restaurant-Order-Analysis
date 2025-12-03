@@ -1,39 +1,40 @@
-#                                                                                      📊 Restaurant Order Analysis (SQL Project)
+# 📊 Restaurant Order Analysis (SQL Project)
 
-## 📝 Project Description
-This project analyzes customer interactions with a restaurant's menu using SQL. It explores menu items, pricing, and order patterns to identify trends in customer behavior. By combining the menu and order tables, the analysis highlights:  
-- Most and least popular dishes  
-- Pricing patterns across categories  
-- Customer ordering behavior over time  
-- Highest-spending orders and detailed item breakdowns  
+## 📝 Project Overview
+This project explores customer interactions with a restaurant's menu using SQL. By analyzing menu items, pricing, and order patterns, it uncovers insights into:  
 
-This analysis helps the restaurant understand which items drive revenue and optimize their offerings.
+- 🍽️ Most and least popular dishes  
+- 💰 Pricing trends across categories  
+- 📅 Customer ordering behavior over time  
+- 🏆 Highest-spending orders and detailed item breakdowns  
+
+The analysis provides actionable insights for optimizing the menu, improving sales, and understanding customer preferences.
 
 ---
 
 ## 🛠️ Skills & Tools
-- **SQL**: `JOIN`, `GROUP BY`, aggregate functions, `COUNT`, `SUM`, `AVG`, subqueries, filtering, date exploration
+- **SQL**: `JOIN`, `GROUP BY`, aggregate functions (`SUM`, `AVG`, `COUNT`), subqueries, filtering, date exploration  
 
 ---
 
-## 🔍 Analysis Overview
+## 🔍 Key Analyses
 
-### Menu Analysis
-- Total number of menu items
-- Least and most expensive items
-- Category breakdown: total items and average price
-- Italian dishes: count, least expensive, most expensive
+### 🍴 Menu Analysis
+- Total number of menu items  
+- Least and most expensive dishes  
+- Category breakdown: total items and average price  
+- Italian dishes: count, least expensive, most expensive  
 
-### Order Analysis
-- Order date range
-- Total orders and total items
-- Orders with the highest number of items
-- Orders with more than 12 items
+### 🧾 Order Analysis
+- Order date range  
+- Total orders and total items  
+- Orders with the highest number of items  
+- Orders with more than 12 items  
 
-### Sales Analysis
-- Least and most ordered items with categories
-- Top 5 highest-spending orders
-- Item breakdown of top orders
+### 💵 Sales Analysis
+- Least and most ordered items with categories  
+- Top 5 highest-spending orders  
+- Detailed item breakdown of top orders  
 
 ---
 
@@ -43,60 +44,79 @@ This analysis helps the restaurant understand which items drive revenue and opti
 -- Use the database
 USE restaurant_db;
 
--- 1. Total number of menu items
+-- 1️⃣ Total number of menu items
+
 SELECT COUNT(menu_item_id) AS Total_Number_of_items
 FROM menu_items;
 
--- 2. Least and most expensive items
-SELECT item_name, price
-FROM menu_items
-ORDER BY price DESC;  -- Most expensive
-SELECT item_name, price
-FROM menu_items
-ORDER BY price ASC;   -- Least expensive
+-- 2️⃣ Least and most expensive items
 
--- 3. Italian dishes analysis
+ -- Most expensive
+
+SELECT item_name, price
+FROM menu_items
+ORDER BY price DESC;
+
+-- Least expensive
+
+SELECT item_name, price
+FROM menu_items
+ORDER BY price ASC;
+
+ 
+
+-- 3️⃣ Italian dishes analysis
+
 SELECT COUNT(*) AS Total_Italian_dishes
 FROM menu_items
 WHERE category = 'Italian';
+
+-- Least expensive Italian dishes
 
 SELECT item_name, price
 FROM menu_items
 WHERE category = 'Italian'
 ORDER BY price ASC
-LIMIT 3;  -- Least expensive Italian dishes
+LIMIT 3;  
+
+ -- Most expensive Italian dishes
 
 SELECT item_name, price
 FROM menu_items
 WHERE category = 'Italian'
 ORDER BY price DESC
-LIMIT 3;  -- Most expensive Italian dishes
+LIMIT 3; 
 
--- 4. Dishes per category + average price
+-- 4️⃣ Dishes per category + average price
+
 SELECT category,
        COUNT(*) AS total_dish_categories,
        ROUND(AVG(price), 2) AS average_price
 FROM menu_items
 GROUP BY category;
 
--- 5. Order date range
+-- 5️⃣ Order date range
+
 SELECT MIN(order_date) AS starting_date,
        MAX(order_date) AS ending_date
 FROM order_details;
 
--- 6. Total orders and items
+-- 6️⃣ Total orders and items
+
 SELECT COUNT(DISTINCT order_id) AS total_orders,
        COUNT(*) AS total_items
 FROM order_details;
 
--- 7. Orders with most items
+-- 7️⃣ Orders with most items
+
 SELECT order_id,
        COUNT(item_id) AS most_number_of_items
 FROM order_details
 GROUP BY order_id
 ORDER BY most_number_of_items DESC;
 
--- 8. Orders with more than 12 items
+-- 8️⃣ Orders with more than 12 items
+
 SELECT COUNT(DISTINCT order_id) AS total_orders
 FROM order_details
 WHERE order_id IN (
@@ -106,12 +126,14 @@ WHERE order_id IN (
     HAVING COUNT(item_id) > 12
 );
 
--- 9. Combine menu_items and order_details
+-- 9️⃣ Combine menu_items and order_details
+
 SELECT *
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id;
 
--- 10. Least and most ordered items
+-- 🔟 Least and most ordered items
+
 SELECT category, item_name, COUNT(item_id) AS least_ordered
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id
@@ -124,7 +146,8 @@ JOIN order_details ON item_id = menu_item_id
 GROUP BY category, item_name
 ORDER BY most_ordered DESC;
 
--- 11. Top 5 highest-spending orders
+-- 1️⃣1️⃣ Top 5 highest-spending orders
+
 SELECT order_id, SUM(price) AS total_spend
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id
@@ -132,14 +155,16 @@ GROUP BY order_id
 ORDER BY total_spend DESC
 LIMIT 5;
 
--- 12. Highest spend order details (example: order_id = 440)
+-- 1️⃣2️⃣ Highest spend order details
+
 SELECT category, item_name, COUNT(item_id) AS total_item
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id
 WHERE order_id = 440
 GROUP BY category, item_name;
 
--- 13. Top 5 highest spend orders breakdown
+-- 1️⃣3️⃣ Top 5 highest spend orders breakdown
+
 SELECT order_id, category, COUNT(item_id) AS total_items, SUM(price) AS total_spend
 FROM menu_items
 JOIN order_details ON item_id = menu_item_id
